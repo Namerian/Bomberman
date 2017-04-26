@@ -23,10 +23,17 @@ public class PlayerController : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+
         Vector2 worldPos = this.transform.position;
         Vector2 tilePos = new Vector2(Mathf.Round(worldPos.x), Mathf.Round(worldPos.y));
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        //if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetButtonDown("Jump"))
         {
             CmdSpawnBomb(tilePos);
         }
@@ -46,25 +53,25 @@ public class PlayerController : NetworkBehaviour
         else if (Input.GetKey(KeyCode.RightArrow) && worldPos.x < 4 && tilePos.y % 2 == 0 && worldPos.y > tilePos.y - _turnOffset && worldPos.y < tilePos.y + _turnOffset)
             direction.x = 1;*/
 
-        if (Input.GetKey(KeyCode.UpArrow)
+        if (Input.GetAxis("Vertical") == 1//Input.GetKey(KeyCode.UpArrow)
             && !(wallUp && worldPos.y >= tilePos.y)
             && (worldPos.x > tilePos.x - _turnOffset && worldPos.x < tilePos.x + _turnOffset))
         {
             direction.y = 1;
         }
-        else if (Input.GetKey(KeyCode.DownArrow)
+        else if (Input.GetAxis("Vertical") == -1 //Input.GetKey(KeyCode.DownArrow)
             && !(wallDown && worldPos.y <= tilePos.y)
             && (worldPos.x > tilePos.x - _turnOffset && worldPos.x < tilePos.x + _turnOffset))
         {
             direction.y = -1;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow)
+        else if (Input.GetAxis("Horizontal") == -1 //Input.GetKey(KeyCode.LeftArrow)
             && !(wallLeft && worldPos.x <= tilePos.x)
             && (worldPos.y > tilePos.y - _turnOffset && worldPos.y < tilePos.y + _turnOffset))
         {
             direction.x = -1;
         }
-        else if (Input.GetKey(KeyCode.RightArrow)
+        else if (Input.GetAxis("Horizontal") == 1 //Input.GetKey(KeyCode.RightArrow)
             && !(wallRight && worldPos.x >= tilePos.x)
             && (worldPos.y > tilePos.y - _turnOffset && worldPos.y < tilePos.y + _turnOffset))
         {
@@ -89,8 +96,7 @@ public class PlayerController : NetworkBehaviour
     [Command]
     private void CmdSpawnBomb(Vector2 pos)
     {
-        GameObject bomb = Instantiate(_bombPrefab, pos, _bombPrefab.transform.rotation);
-        bomb.GetComponent<BombController>().Initialize(4);
+        RpcSpawnBomb(pos);
     }
 
     private bool CheckForWall(Vector2 tilePos)
@@ -112,5 +118,13 @@ public class PlayerController : NetworkBehaviour
     public void CmdDie()
     {
         Destroy(this.gameObject);
+    }
+
+
+    [ClientRpc]
+    private void RpcSpawnBomb(Vector2 pos)
+    {
+        GameObject bomb = Instantiate(_bombPrefab, pos, _bombPrefab.transform.rotation);
+        bomb.GetComponent<BombController>().Initialize(4);
     }
 }

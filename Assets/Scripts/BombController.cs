@@ -42,7 +42,7 @@ public class BombController : NetworkBehaviour
         Vector2 worldPos = this.transform.position;
         Vector2 tilePos = new Vector2(Mathf.Round(worldPos.x), Mathf.Round(worldPos.y));
 
-        CmdSpawnExplosion(tilePos, 0);
+        SpawnExplosion(tilePos, 0);
 
         Vector2 currentPos;
         bool[] spread = { true, true, true, true };
@@ -70,22 +70,22 @@ public class BombController : NetworkBehaviour
                     else if (hit.collider.CompareTag("DestructibleWall"))
                     {
                         //Destroy(hit.collider.gameObject);
-                        CmdSpawnExplosion(currentPos, _tileDelay * r);
+                        SpawnExplosion(currentPos, _tileDelay * r);
                         noWall = false;
                         //break;
                     }
                 }
 
                 if (noWall)
-                    CmdSpawnExplosion(currentPos, _tileDelay * r);
+                    SpawnExplosion(currentPos, _tileDelay * r);
             }
         }
 
         Destroy(this.gameObject);
     }
 
-    [Command]
-    private void CmdSpawnExplosion(Vector2 pos, float delay)
+    //[Command]
+    private void SpawnExplosion(Vector2 pos, float delay)
     {
         GameObject explosion = Instantiate(_explosionPrefab, pos, _explosionPrefab.transform.rotation);
         explosion.GetComponent<ExplosionScript>().Initialize(delay);

@@ -15,17 +15,10 @@ public class GameController : NetworkBehaviour
     private GameObject _destructibleWallPrefab;
 
     // Use this for initialization
+    [ServerCallback]
     void Start()
     {
-        if (this.isServer)
-        {
-            List<Vector2> destructibleWallPositions = GenerateDestructibleWallPositions();
-
-            foreach (Vector2 position in destructibleWallPositions)
-            {
-                CmdGenerateDestructibleWall(position);
-            }
-        }
+            RpcGenerateDestructibleWalls();
     }
 
     // Update is called once per frame
@@ -41,9 +34,11 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    private List<Vector2> GenerateDestructibleWallPositions()
+    [ClientRpc]
+    private void RpcGenerateDestructibleWalls()
     {
-        List<Vector2> positions = new List<Vector2>();
+        Debug.LogError("error");
+
         int halfSize = _mapSize / 2;
         System.Random random = new System.Random();
 
@@ -57,20 +52,19 @@ public class GameController : NetworkBehaviour
                     && !(Mathf.Abs(y) == halfSize && (Mathf.Abs(x) == halfSize - 1))
                     && !(Mathf.Abs(x) == halfSize && (Mathf.Abs(y) == halfSize - 1)))
                 {
-                    positions.Add(new Vector2(x, y));
+                    GameObject wall = Instantiate(_destructibleWallPrefab, new Vector2(x, y), _destructibleWallPrefab.transform.rotation);
+                    wall.transform.parent = _wallHolder;
                 }
             }
         }
-
-        return positions;
     }
 
-    [Command]
-    private void CmdGenerateDestructibleWall(Vector2 position)
+    /*[ClientRpc]
+    private void RpcGenerateDestructibleWall(Vector2 position)
     {
         GameObject wall = Instantiate(_destructibleWallPrefab, position, _destructibleWallPrefab.transform.rotation);
         wall.transform.parent = _wallHolder;
-    }
+    }*/
 
     private bool CheckForWall(Vector2 tilePos)
     {
